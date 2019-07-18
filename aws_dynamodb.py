@@ -2,18 +2,8 @@
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
-# IAMアクセスID＆キーで認証する場合
-access_key_id = ''
-secret_access_key = ''
-
-# リージョン名を指定
-region = ''
-
 # クライアントを作成
-client = boto3.resource('dynamodb', 
-    aws_access_key_id=access_key_id,
-    aws_secret_access_key=secret_access_key,
-    region_name=region)
+client = boto3.resource('dynamodb', region_name='')
 
 # テーブルのクライアントを作成
 table_name = 'TodoList'

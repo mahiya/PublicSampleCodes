@@ -18,10 +18,7 @@ namespace DynamoDbSample
         static async Task RunAsync()
         {
             var tableName = "SampleTable";
-
-            var awsAccessId = "";
-            var awsAccessKey = "";
-            var client = new AmazonDynamoDBClient(awsAccessId, awsAccessKey, Amazon.RegionEndpoint.APSoutheast1);
+            var client = new AmazonDynamoDBClient(Amazon.RegionEndpoint.APSoutheast1);
 
             // テーブルを作成する
             var request = new CreateTableRequest
