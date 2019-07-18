@@ -3,7 +3,7 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 # クライアントを作成
-client = boto3.resource('dynamodb', region_name='')
+client = boto3.resource('dynamodb', region_name='ap-northeast-1')
 
 # テーブルのクライアントを作成
 table_name = 'TodoList'
