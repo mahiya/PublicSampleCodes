@@ -10,7 +10,7 @@ table_name = 'TodoList'
 table = client.Table(table_name)
 
 # データを追加
-userIds = ['user1', 'user2', 'user3']
+userIds = ['user1', 'user2', 'user3', 'user4']
 for userId in userIds: 
     resp = table.put_item(
     Item = {
