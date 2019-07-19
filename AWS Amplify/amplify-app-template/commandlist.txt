@@ -1,0 +1,8 @@
+npm install
+npm install --save aws-amplify
+amplify configure
+amplify init
+amplify add auth
+amplify push
+amplify add hosting
+amplify publish
