@@ -16,26 +16,27 @@ Amplify.configure({
     }
 });
 
-// ログイン処理
-const username = "";
-const password = "";
-Auth.signIn(username, password).then(data => {
-    // ログイン成功
-    console.log("Login succeeded");
-    console.log(data);
-}).catch(err => {
-    // ログイン失敗
-    console.error("Login failed");
-    console.error(err);
-});
+(async function main() {
 
-// API呼び出し処理
-const apiName = 'MyAPIGatewayAPI';
-const path = '/xxx'; 
-API.get(apiName, path).then(response => {
-    console.log("API call succeeded");
-    console.log(response);
-}).catch(error => {
-    console.error("API call failed");
-    console.error(error)
-});
+    // ログイン処理
+    const username = "";
+    const password = "";
+    var user = await Auth.signIn(username, password);   
+    
+    // 一時パスワードが設定されている場合
+    if (user.challengeName === "NEW_PASSWORD_REQUIRED") {
+        await Auth.completeNewPassword(user, password);
+    }
+
+    // API呼び出し処理
+    const apiName = 'MyAPIGatewayAPI';
+    const path = '/xxx'; 
+    var req = {
+        headers: {
+            Authorization: (await Auth.currentSession()).idToken.jwtToken
+        }
+    };
+    var resp = await API.get(apiName, path, req);
+    console.log(resp);
+
+})();
