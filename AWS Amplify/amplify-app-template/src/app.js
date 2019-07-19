@@ -11,4 +11,3 @@ Auth.signIn(username, password).then(function(data) {
     // ログイン失敗
     console.error(err);
 });
-
