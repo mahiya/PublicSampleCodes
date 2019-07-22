@@ -46,15 +46,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello-world/ # ソースコードのパス      
-      Policies: # IAMポリシー (DynamoDB の読み取りのみの権限を与える想定)
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:GetItem
-                - dynamodb:Scan
-                - dynamodb:Query
-              Resource: '使用するDynamoDBのARN'               
+      #Policies: # IAMポリシー (DynamoDB の読み取りのみの権限を与える想定)
+      #  - Version: '2012-10-17'
+      #    Statement:
+      #      - Effect: Allow
+      #        Action:
+      #          - dynamodb:GetItem
+      #        Resource: '使用するDynamoDBのARN'               
       Events: # トリガー定義 (API Gateway によるRESTアクセスを想定)
         ApiCall:
           Type: Api 
