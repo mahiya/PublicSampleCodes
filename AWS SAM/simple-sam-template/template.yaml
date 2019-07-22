@@ -1,0 +1,66 @@
+# 参考: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for API Gateway, Lambda, Cognito
+
+# 共通設定
+Globals:
+
+  # API Gateway の共通設定
+  Api:
+    Cors: # CORS設定
+      AllowMethods: "'GET,POST,PUT,DELETE'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+
+  # Function の共通設定
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Runtime: nodejs8.10
+    Handler: app.lambdaHandler
+    Environment: # 環境変数
+      Variables:
+        SAMPLE_ENV_VALUE: Env1
+    Tags: 
+      TagKey: TagValue
+ 
+# 各リソースの定義    
+Resources:
+
+  # API Gateway の定義
+  HelloApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Production # ステージ名
+      Auth: # 認証設定 (オーソライザー)
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: 使用するCognitoUserPoolのARN
+            Identity:
+              Header: Authorization
+
+  # Function の定義
+  HelloFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/ # ソースコードのパス      
+      Policies: # IAMポリシー (DynamoDB の読み取りのみの権限を与える想定)
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Scan
+                - dynamodb:Query
+              Resource: '使用するDynamoDBのARN'               
+      Events: # トリガー定義 (API Gateway によるRESTアクセスを想定)
+        ApiCall:
+          Type: Api 
+          Properties:
+            Path: /hello
+            Method: get
+            RestApiId: !Ref HelloApiGateway # 上記の API Gateway の ID を指定する
+            Auth:
+              Authorizer: CognitoAuthorizer
