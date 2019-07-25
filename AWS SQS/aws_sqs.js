@@ -1,12 +1,12 @@
 (async () => {
 
     // npm install aws-sdk
-    const AWS = require("aws-sdk");
+    var AWS = require("aws-sdk");
     AWS.config.update({region: "ap-northeast-1"});
 
     // AWS SQS クライアントを作成し、URLを指定する
-    const sqs = new AWS.SQS();
-    const queueUrl = "https://sqs.ap-northeast-1.amazonaws.com/xxxxxxx/xxxxxxxx";
+    var sqs = new AWS.SQS();
+    var queueUrl = "https://sqs.ap-northeast-1.amazonaws.com/xxxxxxx/xxxxxxxx";
 
     //  メッセージをキューに送信する
     var sendResult = await sqs.sendMessage({
