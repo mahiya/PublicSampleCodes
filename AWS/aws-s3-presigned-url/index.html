@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <input type="file" id="selectFile" />
+        <button id="upload">Upload</button>
+
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script>
+            document.getElementById('upload').addEventListener('click', async() => {
+
+                var file = document.getElementById('selectFile').files[0];
+                if (!file) return;
+
+                // Lambda に PreSignedURL を発行してもらう
+                var url = 'Lambda関数を呼び出す API Gateway メソッドのエンドポイント';
+                var resp = await axios.get(url);
+                var preSignedUrl = resp.data;
+
+                // メッセージBODYを作成する
+                var formData = new FormData();
+                for(var key in preSignedUrl.fields) {
+                    formData.append(key, preSignedUrl.fields[key]);
+                }
+                formData.append("file", file);
+
+                // S3 へファイルをアップロードする
+                await axios.post(preSignedUrl.url, formData);
+
+            });
+        </script>
+    </body>
+</html>
