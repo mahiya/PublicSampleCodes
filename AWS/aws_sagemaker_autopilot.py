@@ -21,7 +21,9 @@ sm.create_auto_ml_job(
         },
         'TargetAttributeName': target_column_name
     }],
-    OutputDataConfig={'S3OutputPath': s3_data_output_path},
+    OutputDataConfig={
+        'S3OutputPath': s3_data_output_path
+    },
     RoleArn=get_execution_role()
 )
 
@@ -32,8 +34,10 @@ while True:
         break
     time.sleep(10)
 
-# 作成されたモデルを確認する
-candidates = sm.list_candidates_for_auto_ml_job(
-    AutoMLJobName=auto_ml_job_name,
-    SortBy='FinalObjectiveMetricValue')['Candidates']
-print(candidates)
+# 最も精度の良い候補でモデルを作成する
+best_candidate = resp['BestCandidate']
+model_name = auto_ml_job_name + '-model'
+model_arn = sm.create_model(
+    Containers=best_candidate['InferenceContainers'],
+    ModelName=model_name,
+    ExecutionRoleArn=role)
