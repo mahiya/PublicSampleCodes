@@ -3,6 +3,7 @@ import boto3
 from sagemaker import get_execution_role
 region = '<Region Name>'
 s3_data_dir_path = 's3://<Bucket Name>/<Data Directory Path>'
+s3_data_output_path = 's3://<Bucket Name>/<Output Path>'
 target_column_name = '<Target Column Name>'
 
 auto_ml_job_name = 'automl-sample'
@@ -22,9 +23,7 @@ sm.create_auto_ml_job(
             'TargetAttributeName': target_column_name
         }
     ],
-    OutputDataConfig={
-        'S3OutputPath': 's3://{}/{}/output'.format(bucket, prefix)
-    },
+    OutputDataConfig={'S3OutputPath': s3_data_output_path},
     RoleArn=get_execution_role()
 )
 
