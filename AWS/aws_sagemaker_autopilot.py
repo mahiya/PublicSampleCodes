@@ -12,17 +12,15 @@ sm = boto3.Session().client(service_name='sagemaker', region_name=region)
 # トレーニングを開始する
 sm.create_auto_ml_job(
     AutoMLJobName=auto_ml_job_name,
-    InputDataConfig=[
-        {
-            'DataSource': {
-                'S3DataSource': {
-                    'S3DataType': 'S3Prefix',
-                    'S3Uri': s3_data_dir_path
-                }
-            },
-            'TargetAttributeName': target_column_name
-        }
-    ],
+    InputDataConfig=[{
+        'DataSource': {
+            'S3DataSource': {
+                'S3DataType': 'S3Prefix',
+                'S3Uri': s3_data_dir_path
+            }
+        },
+        'TargetAttributeName': target_column_name
+    }],
     OutputDataConfig={'S3OutputPath': s3_data_output_path},
     RoleArn=get_execution_role()
 )
@@ -30,8 +28,7 @@ sm.create_auto_ml_job(
 # トレーニング状態を確認する
 while True:
     resp = sm.describe_auto_ml_job(AutoMLJobName=auto_ml_job_name)
-    status = resp['AutoMLJobStatus']
-    if status == 'Completed':
+    if resp['AutoMLJobStatus'] == 'Completed':
         break
     time.sleep(10)
 
