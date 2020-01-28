@@ -27,14 +27,10 @@ namespace PollySample
 
             // 取得した音声データをファイルに保存する
             const string fileName = "result.mp3";
-            using (var stream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var stream = new MemoryStream())
             {
-                int read;
-                byte[] buffer = new byte[1024];
-                while ((read = await resp.AudioStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                {
-                    await stream.WriteAsync(buffer, 0, read);
-                }
+                await resp.AudioStream.CopyToAsync(stream);
+                await File.WriteAllBytesAsync(fileName, stream.ToArray());
             }
         }
     }
