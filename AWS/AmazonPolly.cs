@@ -31,9 +31,9 @@ namespace PollySample
             {
                 int read;
                 byte[] buffer = new byte[1024];
-                while ((read = resp.AudioStream.Read(buffer, 0, buffer.Length)) > 0)
+                while ((read = await resp.AudioStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
-                    stream.Write(buffer, 0, read);
+                    await stream.WriteAsync(buffer, 0, read);
                 }
             }
         }
