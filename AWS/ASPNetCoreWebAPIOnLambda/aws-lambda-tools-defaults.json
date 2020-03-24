@@ -1,0 +1,10 @@
+{
+	"profile": "default",
+	"stack-name": "AspNetWebApiOnLambda",
+	"region": "ap-northeast-1",
+	"configuration": "Release",
+	"framework": "netcoreapp2.1",
+	"s3-bucket": "<please input your S3 bucket name>",
+	"s3-prefix": "AspNetWebApiOnLambda/",
+	"template": "template.json"
+}
