@@ -14,7 +14,7 @@ namespace AwsS3Sample
             var client = new AmazonS3Client(region);
             var transfer = new TransferUtility(client);
 
-            const string bucketName = "mahiya-sample";
+            const string bucketName = "<please input your bucket name>";
 
             // ファイルのアップロード
             const string uploadFilePath = "s3_sample_upload.txt";
