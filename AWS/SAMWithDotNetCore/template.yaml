@@ -1,0 +1,14 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: dotnetcore2.1    
+      CodeUri: WebAPI/
+      Handler: WebAPI::PublicSampleCode.Api.Function::FunctionHandler
+      Events:
+        WebApi:
+          Type: Api
+          Properties:
+            Path: /api
+            Method: get
