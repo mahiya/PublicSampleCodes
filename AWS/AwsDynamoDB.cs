@@ -1,79 +1,113 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-// Install-Package AWSSDK.DynamoDBv2
+using System.Collections.Generic;
+// dotnet add package AWSSDK.DynamoDBv2
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.DataModel;
 
 namespace DynamoDbSample
 {
     class Program
     {
-        static void Main()
+        const string TABLE_NAME = "SampleTable3";
+
+        static async Task Main()
         {
-            RunAsync().Wait();
+            var region = Amazon.RegionEndpoint.APNortheast1;
+            var client = new AmazonDynamoDBClient(region);
+            await CreateTableIfNotExistsAsync(client, TABLE_NAME);
+
+            using (var context = new DynamoDBContext(client))
+            {
+                // データの追加 (PutItem処理)
+                var item = new SampleTableData
+                {
+                    PartitionKey = 0,
+                    SortKey = "SK0",
+                    Property1 = DateTime.Now
+                };
+                await context.SaveAsync(item);
+
+                // 複数データの追加 (BatchWriteItem処理)
+                var batchWrite = context.CreateBatchWrite<SampleTableData>();
+                var items = Enumerable.Range(1, 9).Select(i => new SampleTableData
+                {
+                    PartitionKey = 0,
+                    SortKey = "SK" + i,
+                    Property1 = DateTime.Now
+                });
+                batchWrite.AddPutItems(items);
+                await batchWrite.ExecuteAsync();
+
+                // データの取得 (Query処理)
+                const int scanPartitionKey = 0;
+                var queriedItems = await context.QueryAsync<SampleTableData>(scanPartitionKey).GetRemainingAsync();
+
+                // データの削除 (DeleteItem処理)
+                await context.DeleteAsync(queriedItems.First());
+
+                // 複数データの削除 (DeleteItem処理)
+                var batchDelete = context.CreateBatchWrite<SampleTableData>();
+                batchDelete.AddDeleteItems(queriedItems.Skip(1).Take(4));
+                await batchDelete.ExecuteAsync();
+            }
         }
 
-        static async Task RunAsync()
+        [DynamoDBTable(TABLE_NAME)]
+        class SampleTableData
         {
-            var tableName = "SampleTable";
-            var client = new AmazonDynamoDBClient(Amazon.RegionEndpoint.APSoutheast1);
+            [DynamoDBHashKey("PK")]
+            public int PartitionKey { get; set; }
 
-            // テーブルを作成する
+            [DynamoDBRangeKey("SK")]
+            public string SortKey { get; set; }
+
+            [DynamoDBProperty("Property1")]
+            public DateTime Property1 { get; set; }
+        }
+
+        // テーブルを作成する
+        static async Task CreateTableIfNotExistsAsync(AmazonDynamoDBClient client, string tableName)
+        {
+            // テーブル名一覧を取得して、既に存在していないかを確認する
+            var tableNames = (await client.ListTablesAsync()).TableNames;
+            if (tableNames.Exists(n => n == tableName)) return;
+
+            // 作成するテーブルの定義を行う
+            const string partitionKeyName = "PK";
+            const string sortKeyName = "SK";
             var request = new CreateTableRequest
             {
                 TableName = tableName,
                 KeySchema = new List<KeySchemaElement>
                 {
-                    new KeySchemaElement("Partition", KeyType.HASH)
+                    // パーティションキーとソートキーのカラム名の指定
+                    new KeySchemaElement(partitionKeyName, KeyType.HASH),
+                    new KeySchemaElement(sortKeyName, KeyType.RANGE)
                 },
                 AttributeDefinitions = new List<AttributeDefinition>
                 {
-                    new AttributeDefinition("Partition", ScalarAttributeType.S)
+                    // パーティションキーとソートキーのデータタイプの指定
+                    new AttributeDefinition(partitionKeyName, ScalarAttributeType.N),
+                    new AttributeDefinition(sortKeyName, ScalarAttributeType.S)
                 },
+                // 課金タイプの指定 (Provisioned か On-demand)
                 BillingMode = BillingMode.PAY_PER_REQUEST,
             };
+
+            // テーブルを作成する
             await client.CreateTableAsync(request);
 
-            // テーブル名一覧取得して表示する
-            var tableNames = (await client.ListTablesAsync()).TableNames;
-            tableNames.ForEach(Console.WriteLine);
-
-            // テーブルの状態を確認する
-            while(true)
+            // テーブルの作成が完了するまで待つ
+            while (true)
             {
                 var description = await client.DescribeTableAsync(tableName);
-                Console.WriteLine("TableStatus = {0}", description.Table.TableStatus);
+                Console.WriteLine("Table Status: {0}", description.Table.TableStatus);
                 if (description.Table.TableStatus == TableStatus.ACTIVE) break;
                 System.Threading.Thread.Sleep(1000);
             }
-
-            // テーブルを参照する
-            var table = Table.LoadTable(client, tableName);
-
-            // テーブルにドキュメントを追加する
-            var document = new Document();
-            document["Partition"] = "Egg";
-            document["PropS"] = "Hiyama";
-            document["PropI"] = 123;
-            document["PropB"] = true;
-            document["PropD"] = DateTime.Now;
-            await table.PutItemAsync(document);
-
-            // 特定のドキュメントを検索する
-            var search = table.Query("Egg", new Expression());
-            var docs = await search.GetNextSetAsync();
-            foreach(var doc in docs)
-            {
-                foreach(var key in doc.Keys)
-                {
-                    Console.WriteLine("{0} = {1}", key, doc[key]);
-                }
-            }
-
-            // テーブルを削除する
-            await client.DeleteTableAsync(tableName);
         }
     }
 }
