@@ -11,7 +11,7 @@ namespace DynamoDbSample
 {
     class Program
     {
-        const string TABLE_NAME = "SampleTable3";
+        const string TABLE_NAME = "SampleTable";
 
         static async Task Main()
         {
