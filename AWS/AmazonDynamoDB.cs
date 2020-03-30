@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
 // dotnet add package AWSSDK.DynamoDBv2
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
@@ -15,13 +16,17 @@ namespace AmazonDynamoDbSample
 
         static async Task Main()
         {
-            var region = Amazon.RegionEndpoint.APNortheast1;
+            var region = Amazon.RegionEndpoint.APNortheast1; // 使用するリージョン
             var client = new AmazonDynamoDBClient(region);
+
+            // 使用するDynamoDBテーブルを作成する
             await CreateTableIfNotExistsAsync(client, TABLE_NAME);
 
             using (var context = new DynamoDBContext(client))
             {
+                //
                 // データの追加 (PutItem処理)
+                //
                 var item = new SampleTableData
                 {
                     PartitionKey = 0,
@@ -30,7 +35,9 @@ namespace AmazonDynamoDbSample
                 };
                 await context.SaveAsync(item);
 
+                //
                 // 複数データの追加 (BatchWriteItem処理)
+                //
                 var batchWrite = context.CreateBatchWrite<SampleTableData>();
                 var items = Enumerable.Range(1, 9).Select(i => new SampleTableData
                 {
@@ -41,14 +48,20 @@ namespace AmazonDynamoDbSample
                 batchWrite.AddPutItems(items);
                 await batchWrite.ExecuteAsync();
 
+                //
                 // データの取得 (Query処理)
+                //
                 const int scanPartitionKey = 0;
                 var queriedItems = await context.QueryAsync<SampleTableData>(scanPartitionKey).GetRemainingAsync();
 
+                //
                 // データの削除 (DeleteItem処理)
+                //
                 await context.DeleteAsync(queriedItems.First());
 
+                //
                 // 複数データの削除 (DeleteItem処理)
+                //
                 var batchDelete = context.CreateBatchWrite<SampleTableData>();
                 batchDelete.AddDeleteItems(queriedItems.Skip(1).Take(4));
                 await batchDelete.ExecuteAsync();
