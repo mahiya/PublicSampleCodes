@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Signal R Sample</title>
+</head>
+<body>
+
+    <input id="messageInput" type="text" />
+    <button id="sendButton">Send</button>
+    <ul id="messages"></ul>
+
+    <script src="signalr.min.js"></script>
+    <script>
+
+        var hubUrl = "/chat";
+        var connection = new signalR.HubConnectionBuilder().withUrl(hubUrl).build();
+        connection.on("ReceiveMessage", receiveMessage);
+        connection.start();
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
+
+        function sendMessage() {
+            var message = document.getElementById("messageInput").value;
+            connection.invoke("SendMessage", message);
+        }
+
+        function receiveMessage(message) {
+            var li = document.createElement("li");
+            li.textContent = message;
+            document.getElementById("messages").appendChild(li);
+        }
+
+    </script>
+</body>
+</html>
